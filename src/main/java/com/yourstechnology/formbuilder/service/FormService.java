@@ -6,25 +6,31 @@ import java.util.stream.Collectors;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import com.yourstechnology.formbuilder.config.JwtUtil;
+import com.yourstechnology.formbuilder.config.JwtService;
 import com.yourstechnology.formbuilder.dto.form.FormDto;
 import com.yourstechnology.formbuilder.dto.form.FormRequest;
 import com.yourstechnology.formbuilder.dto.form.FormResponse;
 import com.yourstechnology.formbuilder.dto.form.GetAllFormResponse;
+import com.yourstechnology.formbuilder.dto.question.QuestionDto;
 import com.yourstechnology.formbuilder.entity.Form;
 import com.yourstechnology.formbuilder.exception.CredentialException;
+import com.yourstechnology.formbuilder.exception.ForbiddenAccessException;
+import com.yourstechnology.formbuilder.exception.ResourceNotFoundException;
 import com.yourstechnology.formbuilder.exception.SlugAlreadyExistsException;
 import com.yourstechnology.formbuilder.repository.FormRepository;
+import com.yourstechnology.formbuilder.repository.QuestionRepository;
 import com.yourstechnology.formbuilder.repository.TokenRepository;
+import com.yourstechnology.formbuilder.util.ApiResponse;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class FormService {
-    private final JwtUtil jwtUtil;
+    private final JwtService jwtService;
     private final FormRepository formRepository;
     private final TokenRepository tokenRepository;
+    private final QuestionRepository questionRepository;
 
     public ResponseEntity<?> createForm(String authHeader, FormRequest request){
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -34,7 +40,7 @@ public class FormService {
 
         tokenRepository.findByToken(token)
             .orElseThrow(() -> new CredentialException("Unauthenticated"));
-        Long requestId = jwtUtil.extractUserId(token);
+        Long requestId = jwtService.extractUserId(token);
 
         if (formRepository.findBySlug(request.getSlug()).isPresent()){
             throw new SlugAlreadyExistsException();
@@ -51,8 +57,7 @@ public class FormService {
 
 
         FormDto formDto = new FormDto(form.getName(), form.getSlug(), form.getDescription(), form.getLimitOneResponse(), form.getCreatorId(), form.getId());
-        FormResponse response = new FormResponse("Create form success", formDto);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(new ApiResponse<>("Create form success", formDto));
         
     }
 
@@ -79,11 +84,23 @@ public class FormService {
         tokenRepository.findByToken(token)
             .orElseThrow(() -> new CredentialException("Unauthenticated"));
 
-        Long creatorId = jwtUtil.extractUserId(token);
-        Form form = formRepository.findBySlugAndCreatorId(slug, creatorId)
-            .orElseThrow(() -> new CredentialException("Unauthenticated"));
+        String email = jwtService.extractEmail(token);
+        String domain = email.substring(email.indexOf("@") + 1);
+
+        Form form = formRepository.findBySlug(slug)
+            .orElseThrow(() -> new ResourceNotFoundException("Form not found"));
+
+        if (!form.getAllowedDomains().contains(domain)) {
+            throw new ForbiddenAccessException("Forbidden access");
+        }
         
-        return ResponseEntity.ok(form);
+        List<QuestionDto> questions = questionRepository.findAllByFormId(form.getId())
+            .stream().map(question -> 
+            new QuestionDto(question.getName(), question.getChoiceType(), question.getIsRequired(), question.getChoices(), question.getFormId(), question.getId()))
+            .collect(Collectors.toList());
+        
+        FormResponse response = new FormResponse(form.getId(), form.getName(), form.getSlug(), form.getDescription(), form.getLimitOneResponse(), form.getCreatorId(), form.getAllowedDomains(), questions);
+        return ResponseEntity.ok(new ApiResponse<>("Get form success", response));
     }
 
 }

@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -25,21 +24,42 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(body);
     }
 
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleResourceNotFound(ResourceNotFoundException ex){
+        Map<String, String> body = new HashMap<>();
+        body.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+    }
+
+    @ExceptionHandler(ForbiddenAccessException.class)
+    public ResponseEntity<Map<String, String>> handleForbiddenAccess(ForbiddenAccessException ex) {
+        Map<String, String> body = new HashMap<>();
+        body.put("message", ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
+    }
+
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<Map<String, String>> handleValidationException(ValidationException ex){
+        Map<String, String> body = new HashMap<>();
+        body.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(body);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Map<String, List<String>>>> handleValidationErrors(MethodArgumentNotValidException ex) {
+    public ResponseEntity<Map<String, Object>> handleValidationErrors(MethodArgumentNotValidException ex) {
         Map<String, List<String>> bodyErrors = new HashMap<>();
         ex.getBindingResult().getFieldErrors().forEach(error -> {
             String field = error.getField();
             String message = error.getDefaultMessage();
 
-            // Kalau field belum ada di map, buat list baru
             bodyErrors.computeIfAbsent(field, key -> new ArrayList<>()).add(message);
         });
         return buildErrorResponse(bodyErrors);
     }
 
     @ExceptionHandler(SlugAlreadyExistsException.class)
-    public ResponseEntity<Map<String, Map<String, List<String>>>> handleSlugExists(SlugAlreadyExistsException ex){
+    public ResponseEntity<Map<String, Object>> handleSlugExists(SlugAlreadyExistsException ex){
         List<String> list = new ArrayList<>();
         list.add("The slug has already been taken.");
         Map<String, List<String>> body = new HashMap<>();
@@ -48,7 +68,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<Map<String, Map<String, List<String>>>> handleBadJson(HttpMessageNotReadableException ex) {
+    public ResponseEntity<Map<String, Object>> handleBadJson(HttpMessageNotReadableException ex) {
         List<String> list = new ArrayList<>();
         list.add("The allowed domains must be an array.");
         Map<String, List<String>> body = new HashMap<>();
@@ -57,8 +77,9 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(body);
     }
 
-    private ResponseEntity<Map<String, Map<String, List<String>>>> buildErrorResponse(Map<String, List<String>> errors) {
-        Map<String, Map<String, List<String>>> body = new HashMap<>();
+    private ResponseEntity<Map<String, Object>> buildErrorResponse(Map<String, List<String>> errors) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("message", "Invalid field");
         body.put("errors", errors);
         return ResponseEntity.status(442).body(body);
     }

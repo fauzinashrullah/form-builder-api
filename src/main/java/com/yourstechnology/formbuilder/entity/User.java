@@ -1,4 +1,4 @@
-package com.yourstechnology.formbuilder.user;
+package com.yourstechnology.formbuilder.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
@@ -13,5 +13,5 @@ public class User {
     private String name;
     private String email;
     private String password;
-
+    private String emailVerifiedAt;
 }

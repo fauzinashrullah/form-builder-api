@@ -7,19 +7,17 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.yourstechnology.formbuilder.entity.AccessToken;
+import com.yourstechnology.formbuilder.entity.User;
 import com.yourstechnology.formbuilder.repository.TokenRepository;
-import com.yourstechnology.formbuilder.user.User;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 
 
 @Service
 @RequiredArgsConstructor
-public class JwtUtil {
+public class JwtService {
     
     @Value("${jwt.secret}")
     private String secret;
@@ -65,6 +63,15 @@ public class JwtUtil {
             .getBody();
 
         return claims.get("id", Long.class);
+    }
+
+    public String extractEmail(String token){
+        return Jwts.parserBuilder()
+            .setSigningKey(getSignInKey())
+            .build()
+            .parseClaimsJws(token)
+            .getBody()
+            .getSubject();
     }
 
 

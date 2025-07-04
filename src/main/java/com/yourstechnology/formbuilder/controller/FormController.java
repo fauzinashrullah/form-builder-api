@@ -4,7 +4,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.yourstechnology.formbuilder.dto.form.FormRequest;
 import com.yourstechnology.formbuilder.dto.question.QuestionRequest;
-import com.yourstechnology.formbuilder.dto.response.ResponseDto;
+import com.yourstechnology.formbuilder.dto.response.SubmitResponseRequest;
 import com.yourstechnology.formbuilder.service.FormService;
 import com.yourstechnology.formbuilder.service.QuestionService;
 import com.yourstechnology.formbuilder.service.ResponseService;
@@ -53,7 +53,7 @@ public class FormController {
     @PostMapping("/{slug}/questions")
     public ResponseEntity<?> addQuestion(   @RequestHeader("Authorization") String authHeader,
                                             @PathVariable String slug, 
-                                            @RequestBody QuestionRequest request) {
+                                            @Valid @RequestBody QuestionRequest request) {
         return questionService.addQuestion(authHeader, slug, request);
     }
     
@@ -67,7 +67,7 @@ public class FormController {
     @PostMapping("/{slug}/responses")
     public ResponseEntity<?> submitResponse(@RequestHeader("Authorization") String authHeader,
                                             @PathVariable String slug,
-                                            @RequestBody ResponseDto request) {
+                                            @Valid @RequestBody SubmitResponseRequest request) {
         return responseService.submitResponse(authHeader, slug, request);
     }
     

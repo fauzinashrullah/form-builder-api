@@ -5,8 +5,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import com.yourstechnology.formbuilder.user.User;
-import com.yourstechnology.formbuilder.user.UserRepository;
+import com.yourstechnology.formbuilder.entity.User;
+import com.yourstechnology.formbuilder.repository.UserRepository;
 
 @Configuration
 public class DataSeeder {

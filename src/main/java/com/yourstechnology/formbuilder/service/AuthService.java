@@ -7,15 +7,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.yourstechnology.formbuilder.config.JwtUtil;
+import com.yourstechnology.formbuilder.config.JwtService;
 import com.yourstechnology.formbuilder.dto.auth.AuthResponse;
 import com.yourstechnology.formbuilder.dto.auth.LoginRequest;
 import com.yourstechnology.formbuilder.dto.auth.UserResponse;
 import com.yourstechnology.formbuilder.entity.AccessToken;
+import com.yourstechnology.formbuilder.entity.User;
 import com.yourstechnology.formbuilder.exception.CredentialException;
 import com.yourstechnology.formbuilder.repository.TokenRepository;
-import com.yourstechnology.formbuilder.user.User;
-import com.yourstechnology.formbuilder.user.UserRepository;
+import com.yourstechnology.formbuilder.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final JwtUtil jwtUtil;
+    private final JwtService jwtUtil;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final TokenRepository tokenRepository;

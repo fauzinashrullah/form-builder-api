@@ -7,13 +7,14 @@ import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import com.yourstechnology.formbuilder.config.JwtUtil;
+import com.yourstechnology.formbuilder.config.JwtService;
 import com.yourstechnology.formbuilder.dto.question.QuestionDto;
 import com.yourstechnology.formbuilder.dto.question.QuestionRequest;
 import com.yourstechnology.formbuilder.dto.question.QuestionResponse;
 import com.yourstechnology.formbuilder.entity.Form;
 import com.yourstechnology.formbuilder.entity.Question;
 import com.yourstechnology.formbuilder.exception.CredentialException;
+import com.yourstechnology.formbuilder.exception.ResourceNotFoundException;
 import com.yourstechnology.formbuilder.repository.FormRepository;
 import com.yourstechnology.formbuilder.repository.QuestionRepository;
 import com.yourstechnology.formbuilder.repository.TokenRepository;
@@ -25,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 public class QuestionService {
     private final QuestionRepository questionRepository;
     private final TokenRepository tokenRepository;
-    private final JwtUtil jwtUtil;
+    private final JwtService jwtService;
     private final FormRepository formRepository;
 
     public ResponseEntity<?> addQuestion(String authHeader, String slug, QuestionRequest request){
@@ -37,7 +38,10 @@ public class QuestionService {
         tokenRepository.findByToken(token)
             .orElseThrow(() -> new CredentialException("Unauthenticated"));
         
-        Long creatorId = jwtUtil.extractUserId(token);
+        if (!formRepository.findBySlug(slug).isPresent()){
+            throw new ResourceNotFoundException("Form not Found");
+        }
+        Long creatorId = jwtService.extractUserId(token);
         Form form = formRepository.findBySlugAndCreatorId(slug, creatorId)
             .orElseThrow(() -> new CredentialException("Unauthenticated"));
 
@@ -45,7 +49,7 @@ public class QuestionService {
         question.setName(request.getName());
         question.setChoiceType(request.getChoiceType());
         question.setChoices(request.getChoices());
-        question.setFormId(creatorId);
+        question.setFormId(form.getId());
         question.setIsRequired(request.getIsRequired());
         questionRepository.save(question);
         
