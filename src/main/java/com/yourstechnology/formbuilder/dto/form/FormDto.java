@@ -9,7 +9,7 @@ public class FormDto {
     private String name;
     private String slug;
     private String description;
-    private Boolean limitOneResponse;
+    private Byte limitOneResponse;
     private Long creatorId;
     private Long id;
 }

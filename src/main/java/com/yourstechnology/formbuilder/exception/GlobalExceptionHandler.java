@@ -8,6 +8,7 @@ import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -32,9 +33,9 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(ForbiddenAccessException.class)
-    public ResponseEntity<Map<String, String>> handleForbiddenAccess(ForbiddenAccessException ex) {
+    public ResponseEntity<Map<String, String>> handleForbiddenAccess() {
         Map<String, String> body = new HashMap<>();
-        body.put("message", ex.getMessage());
+        body.put("message", "Forbidden access");
 
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
     }
@@ -44,6 +45,13 @@ public class GlobalExceptionHandler {
         Map<String, String> body = new HashMap<>();
         body.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(body);
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<?> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(
+            Map.of("message", "Method not allowed")
+        );
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

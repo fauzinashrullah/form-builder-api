@@ -2,7 +2,7 @@ package com.yourstechnology.formbuilder.dto.form;
 
 import java.util.List;
 
-import com.yourstechnology.formbuilder.dto.question.QuestionDto;
+import com.yourstechnology.formbuilder.dto.question.QuestionResponse;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,9 +14,9 @@ public class FormResponse {
     private String name;
     private String slug;
     private String description;
-    private Boolean limitOneResponse;
+    private Byte limitOneResponse;
     private Long creatorId;
     private List<String> allowedDomains;
-    private List<QuestionDto> questions;
+    private List<QuestionResponse> questions;
 }
 

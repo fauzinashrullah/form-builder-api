@@ -21,7 +21,7 @@ public class Form {
     private String slug;
     private List<String> allowedDomains;
     private String description;
-    private Boolean limitOneResponse;
+    private Byte limitOneResponse;
 
     @Column(name = "creator_id")
     private Long creatorId;

@@ -26,7 +26,7 @@ public class ResponseService {
     private final AnswerRepository answerRepository;
     private final UserRepository userRepository;
 
-    public ResponseEntity<?> submitResponse(String authHeader, String slug, SubmitResponseRequest request){
+    public ResponseEntity<Map<String, String>> submitResponse(String authHeader, String slug, SubmitResponseRequest request){
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             throw new CredentialException("Unauthenticated");
         }
@@ -43,7 +43,7 @@ public class ResponseService {
         String email = jwtUtil.extractEmail(token);
         String domain = email.substring(email.indexOf("@") + 1);
         if (!form.getAllowedDomains().contains(domain)) {
-            throw new ForbiddenAccessException("Forbidden access");
+            throw new ForbiddenAccessException();
         }
         
         if (responseRepository.findByFormIdAndUserId(form.getId(), userId).isPresent()){
@@ -65,12 +65,12 @@ public class ResponseService {
             answer.setValue(question.getValue());
             answerRepository.save(answer);
         }
-        Map<String, String> responseBody = new HashMap<>();
+        Map<String, String> responseBody = new LinkedHashMap<>();
         responseBody.put("message", "Submit response success");
         return ResponseEntity.ok(responseBody);
     }
 
-    public ResponseEntity<?> getAllResponse(String authHeader, String slug){
+    public ResponseEntity<Map<String, Object>> getAllResponse(String authHeader, String slug){
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             throw new CredentialException("Unauthenticated");
         }
@@ -85,18 +85,24 @@ public class ResponseService {
 
         Long userId = jwtUtil.extractUserId(token);
         Form form = formRepository.findBySlugAndCreatorId(slug, userId)
-            .orElseThrow(() -> new ForbiddenAccessException("Forbidden access"));
+            .orElseThrow(() -> new ForbiddenAccessException());
 
         List<Response> responses = responseRepository.findAllByFormId(form.getId());
         List<GetResponse> getAllResponses = responses.stream().map(response ->{
             User user = userRepository.findById(response.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
             List<Answer> answers = answerRepository.findAllByResponseId(response.getId());
             AnswerResponse answerResponse = new AnswerResponse(answers.get(0).getValue(), answers.get(1).getValue(), answers.get(2).getValue(), answers.get(3).getValue());
+
             UserDTO userDTO = new UserDTO(user.getId(), user.getName(), user.getEmail(), user.getEmailVerifiedAt());
             return new GetResponse(response.getDate(), userDTO, answerResponse);
         }).collect(Collectors.toList());
 
-        return ResponseEntity.ok(getAllResponses);
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("message", "Get responses succes");
+        response.put("responses", getAllResponses);
+
+        return ResponseEntity.ok(response);
     }
 }

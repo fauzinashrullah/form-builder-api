@@ -74,5 +74,13 @@ public class JwtService {
             .getSubject();
     }
 
+    public String ectractDomain(String token){
+        String email = extractEmail(token);
+        return email.substring(email.indexOf("@") + 1);
+    }
+
+    public Boolean isTokenValid(String token){
+        return tokenRepository.findByToken(token).isPresent();
+    }
 
 }
