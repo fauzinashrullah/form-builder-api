@@ -34,8 +34,9 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/v1/auth/login").permitAll()
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**",  "/swagger-ui.html").permitAll()
                 .requestMatchers("/api/v1/forms/**").authenticated()
-                .anyRequest().denyAll()
+                .anyRequest().authenticated()
             )
             .exceptionHandling(ex -> ex
             .authenticationEntryPoint(jwtAuthenticationEntryPoint)
