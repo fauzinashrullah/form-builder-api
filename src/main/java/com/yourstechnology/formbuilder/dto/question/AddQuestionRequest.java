@@ -2,10 +2,8 @@ package com.yourstechnology.formbuilder.dto.question;
 
 import java.util.List;
 
-import com.yourstechnology.formbuilder.util.ChoiceType;
+import com.yourstechnology.formbuilder.model.ChoiceType;
 
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -13,14 +11,13 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class QuestionRequest {
+public class AddQuestionRequest {
     @NotBlank(message = "The name field is required.")
     private String name;
 
-    @NotNull(message = "The name field is required.")
-    @Enumerated(EnumType.STRING)
+    @NotNull(message = "The choice type field is required.")
     private ChoiceType choiceType;
-
+    
     private List<String> choices;
     private Boolean isRequired;
 }

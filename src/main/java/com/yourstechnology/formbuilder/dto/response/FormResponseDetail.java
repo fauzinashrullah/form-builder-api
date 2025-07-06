@@ -5,9 +5,9 @@ import lombok.AllArgsConstructor;
 
 @Getter
 @AllArgsConstructor
-public class GetResponse {
+public class FormResponseDetail {
     private String date;
-    private UserDTO user;
+    private UserSummary user;
     private AnswerResponse answers;
 
 }

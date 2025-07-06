@@ -8,7 +8,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class SubmitResponseRequest {
+public class SubmitFormResponseRequest {
     @NotNull(message = "The answers field is required.")
-    private List<AnswerRequest> answers;
+    private List<SubmitAnswerRequest> answers;
 }

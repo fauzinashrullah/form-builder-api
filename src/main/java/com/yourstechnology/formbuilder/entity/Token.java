@@ -10,7 +10,7 @@ import lombok.Data;
 @Entity
 @Data
 @Table(name = "personal_access_tokens")
-public class AccessToken {
+public class Token {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 

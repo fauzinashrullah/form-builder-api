@@ -12,11 +12,11 @@ import lombok.Data;
 @Entity
 @Data
 @Table(name = "allowed_domains")
-public class AllowedDomains {
+public class AllowedDomain {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private Long formId;
-
     private List<String> domain;
+
 }

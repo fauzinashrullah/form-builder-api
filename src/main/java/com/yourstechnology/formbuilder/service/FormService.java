@@ -1,34 +1,44 @@
 package com.yourstechnology.formbuilder.service;
 
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import com.yourstechnology.formbuilder.config.JwtService;
-import com.yourstechnology.formbuilder.dto.form.*;
-import com.yourstechnology.formbuilder.dto.question.QuestionResponse;
+import com.yourstechnology.formbuilder.dto.form.CreateFormRequest;
+import com.yourstechnology.formbuilder.dto.form.FormDetailResponse;
+import com.yourstechnology.formbuilder.dto.form.FormQuestionResponse;
+import com.yourstechnology.formbuilder.dto.form.FormSummaryResponse;
+import com.yourstechnology.formbuilder.entity.AllowedDomain;
 import com.yourstechnology.formbuilder.entity.Form;
-import com.yourstechnology.formbuilder.exception.*;
-import com.yourstechnology.formbuilder.repository.*;
+import com.yourstechnology.formbuilder.exception.DuplicateSlugException;
+import com.yourstechnology.formbuilder.exception.ForbiddenException;
+import com.yourstechnology.formbuilder.exception.ResourceNotFoundException;
+import com.yourstechnology.formbuilder.repository.DomainRepository;
+import com.yourstechnology.formbuilder.repository.FormRepository;
+import com.yourstechnology.formbuilder.repository.QuestionRepository;
+import com.yourstechnology.formbuilder.security.JwtTokenService;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class FormService {
-    private final JwtService jwtService;
+    private final JwtTokenService jwtTokenService;
     private final FormRepository formRepository;
     private final QuestionRepository questionRepository;
+    private final DomainRepository domainRepository;
 
-    public ResponseEntity<Map<String, Object>> createForm(FormRequest request){
+    public ResponseEntity<Map<String, Object>> createForm(CreateFormRequest request){
         String token = (String) SecurityContextHolder.getContext().getAuthentication().getDetails();
-        Long requestId = jwtService.extractUserId(token);
+        Long requestId = jwtTokenService.extractUserId(token);
 
         if (formRepository.findBySlug(request.getSlug()).isPresent()){
-            throw new SlugAlreadyExistsException();
+            throw new DuplicateSlugException();
         }
         Byte limitOneResponse;
         if(request.getLimitOneResponse()){
@@ -40,13 +50,24 @@ public class FormService {
         Form form = new Form();
         form.setName(request.getName());
         form.setSlug(request.getSlug());
-        form.setAllowedDomains(request.getAllowedDomains());
         form.setDescription(request.getDescription());
         form.setLimitOneResponse(limitOneResponse);
         form.setCreatorId(requestId);
         formRepository.save(form);
 
-        FormDto formDto = new FormDto(form.getName(), form.getSlug(), form.getDescription(), form.getLimitOneResponse(), form.getCreatorId(), form.getId());
+        AllowedDomain allowedDomains = new AllowedDomain();
+        allowedDomains.setFormId(form.getId());
+        allowedDomains.setDomain(request.getAllowedDomains());
+        domainRepository.save(allowedDomains);
+
+        FormSummaryResponse formDto = new FormSummaryResponse(
+            form.getId(), 
+            form.getName(), 
+            form.getSlug(), 
+            form.getDescription(), 
+            form.getLimitOneResponse(), 
+            form.getCreatorId()
+            );
 
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("message", "Create form success");
@@ -57,11 +78,19 @@ public class FormService {
 
     public ResponseEntity<Map<String, Object>> getAllForms(){
         String token = (String) SecurityContextHolder.getContext().getAuthentication().getDetails();
-        Long creatorId = jwtService.extractUserId(token);
+        Long creatorId = jwtTokenService.extractUserId(token);
 
         List<Form> allForm = formRepository.findAllByCreatorId(creatorId);
-        List<FormDto> list = allForm.stream().map(form -> new FormDto(form.getName(), form.getSlug(), form.getDescription(), form.getLimitOneResponse(), form.getCreatorId(), form.getId()))
-            .collect(Collectors.toList());
+        List<FormSummaryResponse> list = allForm.stream().map(form -> new 
+            FormSummaryResponse(
+                form.getId(), 
+                form.getName(), 
+                form.getSlug(), 
+                form.getDescription(), 
+                form.getLimitOneResponse(), 
+                form.getCreatorId()
+                ))
+        .collect(Collectors.toList());
         
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("message", "Get all forms success");
@@ -71,24 +100,43 @@ public class FormService {
 
     public ResponseEntity<Map<String, Object>> detailForm(String slug){
         String token = (String) SecurityContextHolder.getContext().getAuthentication().getDetails();
-        String domain = jwtService.ectractDomain(token);
+        String domain = jwtTokenService.extractDomain(token);
 
         Form form = formRepository.findBySlug(slug)
             .orElseThrow(() -> new ResourceNotFoundException("Form not found"));
+        List<String> allowedDomains = domainRepository.findByFormId(form.getId())
+            .orElseThrow(() -> new ResourceNotFoundException("Domains not found"))
+            .getDomain();
 
-        if (!form.getAllowedDomains().contains(domain)) {
-            throw new ForbiddenAccessException();
+        if (!allowedDomains.contains(domain)) {
+            throw new ForbiddenException();
         }
         
-        List<QuestionResponse> questions = questionRepository.findAllByFormId(form.getId())
+        List<FormQuestionResponse> questions = questionRepository.findAllByFormId(form.getId())
             .stream().map(question -> 
-            new QuestionResponse(question.getName(), question.getChoiceType(), question.getIsRequired(), question.getChoices(), question.getFormId(), question.getId()))
+            new FormQuestionResponse(
+                question.getId(), 
+                question.getFormId(), 
+                question.getName(), 
+                question.getChoiceType(), 
+                question.getChoices(), 
+                question.getIsRequired()
+                ))
             .collect(Collectors.toList());
         
-        FormResponse responseBody = new FormResponse(form.getId(), form.getName(), form.getSlug(), form.getDescription(), form.getLimitOneResponse(), form.getCreatorId(), form.getAllowedDomains(), questions);
+        FormDetailResponse responseBody = new FormDetailResponse(
+            form.getId(), 
+            form.getName(), 
+            form.getSlug(), 
+            form.getDescription(), 
+            form.getLimitOneResponse(), 
+            form.getCreatorId(), 
+            allowedDomains, 
+            questions
+            );
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("message", "Get form success");
-        response.put("forms", responseBody);
+        response.put("form", responseBody);
         return ResponseEntity.ok(response);
     }
 

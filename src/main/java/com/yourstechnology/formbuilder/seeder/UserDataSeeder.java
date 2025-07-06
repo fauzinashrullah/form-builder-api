@@ -9,7 +9,7 @@ import com.yourstechnology.formbuilder.entity.User;
 import com.yourstechnology.formbuilder.repository.UserRepository;
 
 @Configuration
-public class DataSeeder {
+public class UserDataSeeder {
 
     @Bean
     CommandLineRunner initDatabase(UserRepository userRepository, PasswordEncoder passwordEncoder) {

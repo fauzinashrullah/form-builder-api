@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class AnswerRequest {
+public class SubmitAnswerRequest {
     private Long questionId;
     private String value;
 }

@@ -1,4 +1,4 @@
-package com.yourstechnology.formbuilder.dto.question;
+package com.yourstechnology.formbuilder.dto.form;
 
 import java.util.List;
 
@@ -9,11 +9,11 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class QuestionResponse {
+public class FormQuestionResponse {
+    private Long id;
+    private Long formId;
     private String name;
     private ChoiceType choiceType;
-    private Boolean isRequired;
     private List<String> choices;
-    private Long formId;
-    private Long id;
+    private Byte isRequired;
 }

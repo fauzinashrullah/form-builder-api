@@ -1,4 +1,4 @@
-package com.yourstechnology.formbuilder.util;
+package com.yourstechnology.formbuilder.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;

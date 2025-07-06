@@ -1,4 +1,4 @@
-package com.yourstechnology.formbuilder.config;
+package com.yourstechnology.formbuilder.security;
 
 import java.security.Key;
 import java.util.Date;
@@ -6,18 +6,20 @@ import java.util.Date;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.yourstechnology.formbuilder.entity.AccessToken;
+import com.yourstechnology.formbuilder.entity.Token;
 import com.yourstechnology.formbuilder.entity.User;
 import com.yourstechnology.formbuilder.repository.TokenRepository;
 
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 
 
 @Service
 @RequiredArgsConstructor
-public class JwtService {
+public class JwtTokenService {
     
     @Value("${jwt.secret}")
     private String secret;
@@ -40,7 +42,7 @@ public class JwtService {
         .signWith(getSignInKey(),SignatureAlgorithm.HS256)
         .compact();
 
-        AccessToken token = new AccessToken();
+        Token token = new Token();
         token.setToken(jwt);
         tokenRepository.save(token);
         return jwt;
@@ -74,7 +76,7 @@ public class JwtService {
             .getSubject();
     }
 
-    public String ectractDomain(String token){
+    public String extractDomain(String token){
         String email = extractEmail(token);
         return email.substring(email.indexOf("@") + 1);
     }

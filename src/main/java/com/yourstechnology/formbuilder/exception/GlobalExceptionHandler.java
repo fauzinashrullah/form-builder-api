@@ -18,8 +18,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(CredentialException.class)
-    public ResponseEntity<Map<String, String>> handleCredentialException(CredentialException ex) {
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<Map<String, String>> handleCredentialException(UnauthorizedException ex) {
         Map<String, String> body = new HashMap<>();
         body.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(body);
@@ -32,7 +32,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
     }
 
-    @ExceptionHandler(ForbiddenAccessException.class)
+    @ExceptionHandler(ForbiddenException.class)
     public ResponseEntity<Map<String, String>> handleForbiddenAccess() {
         Map<String, String> body = new HashMap<>();
         body.put("message", "Forbidden access");
@@ -66,8 +66,8 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(bodyErrors);
     }
 
-    @ExceptionHandler(SlugAlreadyExistsException.class)
-    public ResponseEntity<Map<String, Object>> handleSlugExists(SlugAlreadyExistsException ex){
+    @ExceptionHandler(DuplicateSlugException.class)
+    public ResponseEntity<Map<String, Object>> handleSlugExists(DuplicateSlugException ex){
         List<String> list = new ArrayList<>();
         list.add("The slug has already been taken.");
         Map<String, List<String>> body = new HashMap<>();
@@ -78,9 +78,9 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Map<String, Object>> handleBadJson(HttpMessageNotReadableException ex) {
         List<String> list = new ArrayList<>();
-        list.add("The allowed domains must be an array.");
+        list.add("Invalid request body");
         Map<String, List<String>> body = new HashMap<>();
-        body.put("allowed_domains", list);
+        body.put("message", list);
 
         return buildErrorResponse(body);
     }

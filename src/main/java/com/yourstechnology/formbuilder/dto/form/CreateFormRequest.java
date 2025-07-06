@@ -2,7 +2,6 @@ package com.yourstechnology.formbuilder.dto.form;
 
 import java.util.List;
 
-
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
@@ -10,7 +9,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class FormRequest {
+public class CreateFormRequest {
     @NotBlank(message = "The name field is required.")
     private String name;
 

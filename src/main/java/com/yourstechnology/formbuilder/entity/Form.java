@@ -1,7 +1,5 @@
 package com.yourstechnology.formbuilder.entity;
 
-import java.util.List;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -19,7 +17,6 @@ public class Form {
 
     private String name;
     private String slug;
-    private List<String> allowedDomains;
     private String description;
     private Byte limitOneResponse;
 

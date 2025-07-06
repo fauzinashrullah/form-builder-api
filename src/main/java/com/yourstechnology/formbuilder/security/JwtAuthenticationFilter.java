@@ -1,4 +1,4 @@
-package com.yourstechnology.formbuilder.config;
+package com.yourstechnology.formbuilder.security;
 
 import java.io.IOException;
 
@@ -18,9 +18,9 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class JwtAuthFilter extends OncePerRequestFilter{
+public class JwtAuthenticationFilter extends OncePerRequestFilter{
 
-    private final JwtService jwtService;
+    private final JwtTokenService jwtTokenService;
     private final UserDetailsService userDetailsService;
 
     @Override
@@ -34,9 +34,9 @@ public class JwtAuthFilter extends OncePerRequestFilter{
         return;
         }
     final String token = authHeader.substring(7);
-    final String email = jwtService.extractEmail(token);
+    final String email = jwtTokenService.extractEmail(token);
     
-    if(token  != null && jwtService.isTokenValid(token)){
+    if(token  != null && jwtTokenService.isTokenValid(token)){
         UserDetails userDetails = userDetailsService.loadUserByUsername(email);
         UsernamePasswordAuthenticationToken auth = 
             new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
