@@ -73,6 +73,3 @@ Bearer <accessToken>
 | GET    | `/api/v1/forms/{slug}/responses`                | Lihat semua jawaban form (creator) |
 
 ---
-
-
-## 🙏 Terima Kasih
